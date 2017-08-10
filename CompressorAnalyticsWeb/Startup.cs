@@ -12,6 +12,9 @@ using Microsoft.Extensions.Logging;
 using CompressorAnalyticsWeb.Data;
 using CompressorAnalyticsWeb.Models;
 using CompressorAnalyticsWeb.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CompressorAnalyticsWeb
 {
@@ -42,12 +45,25 @@ namespace CompressorAnalyticsWeb
             // Add framework services.
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+            
+            //  set the cookie for sign in
+            services.AddIdentity<ApplicationUser, IdentityRole>(config =>
+            {
+                //  Require a confirmed email in order to log in
+                config.SignIn.RequireConfirmedEmail = true;
+                // Cookie settings
+                config.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromHours(10);
+                config.Cookies.ApplicationCookie.LoginPath = "/Account/LogIn";
+                config.Cookies.ApplicationCookie.LogoutPath = "/Account/LogOut";
+            }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
             services.AddMvc();
+
+            //  Enforce SSL (redirect to https)
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new RequireHttpsAttribute());
+            });
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
@@ -59,6 +75,9 @@ namespace CompressorAnalyticsWeb
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            //  Redirect all http requests to https
+            var options = new RewriteOptions().AddRedirectToHttps();
 
             if (env.IsDevelopment())
             {
@@ -76,6 +95,18 @@ namespace CompressorAnalyticsWeb
             app.UseIdentity();
 
             // Add external authentication middleware below. To configure them please see https://go.microsoft.com/fwlink/?LinkID=532715
+            //  Add cookie middleware to the configure an identity request and persist it to a cookie.
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationScheme = "Cookie",
+                LoginPath = new PathString("/Account/Login/"),
+                AccessDeniedPath = new PathString("/Account/Forbidden/"),
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                //ExpireTimeSpan = TimeSpan.FromSeconds(10),
+                ExpireTimeSpan = TimeSpan.FromHours(10),
+                SlidingExpiration = true,
+            });
 
             app.UseMvc(routes =>
             {
@@ -83,6 +114,8 @@ namespace CompressorAnalyticsWeb
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            SeedUsers.Initialize(app.ApplicationServices);
         }
     }
 }

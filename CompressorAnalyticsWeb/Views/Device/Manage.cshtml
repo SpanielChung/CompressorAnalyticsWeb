@@ -1,0 +1,18 @@
+﻿@model CompressorAnalyticsWeb.Models.ManageDeviceViewModel
+
+@{
+    ViewData["Title"] = "Manage Device - " + Model.Device.deviceId;
+}
+<h2>@ViewData["Title"]</h2>
+<h3>@ViewData["Message"]</h3>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="input-group">
+            <input type="text" class="form-control" asp-for="Device.dataTransferInterval">
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="button">Update Data Rate</button>
+            </span>
+        </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+</div><!-- /.row -->

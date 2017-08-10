@@ -17,6 +17,7 @@ namespace CompressorAnalyticsWeb.Models
         [Key]
         [Display(Name = "Device ID")]
         public string deviceId { get; set; }
+        public string deviceKey { get; set; }
 
         //  Location
         [Display(Name = "Latitude (decimal)")]
