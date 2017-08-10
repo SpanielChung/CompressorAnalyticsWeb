@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CompressorAnalyticsWeb
+namespace CompressorAnalyticsWeb.Models
 {
     public class DataLog
     {
-
+        [Key]
+        public int id { get; set; }
         public decimal compressorCurrent    {get; set;}        //pC
         public decimal fanCurrent           {get; set;}       //pF
         public decimal returnAirTemp        {get; set;}       //tR
@@ -22,6 +25,9 @@ namespace CompressorAnalyticsWeb
 
         public DateTime timeStamp { get; set; }
 
+        public string deviceId { get; set; }
+        [ForeignKey("deviceId")]
+        public Device Device { get; set; }
         public DataLog()
         {
 
