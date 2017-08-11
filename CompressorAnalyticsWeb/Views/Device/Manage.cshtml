@@ -5,14 +5,273 @@
 }
 <h2>@ViewData["Title"]</h2>
 <h3>@ViewData["Message"]</h3>
+<div class="row">
+    <div class="col-lg-6">
+        <canvas id="ref"></canvas>
+    </div>
+    <div class="col-lg-6">
+        <canvas id="power"></canvas>
+    </div>
+
+</div>
+<div class="row">
+    <div class="col-lg-6">
+        <canvas id="airT"></canvas>
+    </div>
+    <div class="col-lg-6">
+        <canvas id="airH"></canvas>
+    </div>
+
+</div>
 
 <div class="row">
     <div class="col-lg-4">
         <div class="input-group">
-            <input type="text" class="form-control" asp-for="Device.dataTransferInterval">
+            <input readonly="readonly" type="text" class="form-control" asp-for="Device.dataTransferInterval">
             <span class="input-group-btn">
-                <button class="btn btn-default" type="button">Update Data Rate</button>
+                <button disabled="true" class="btn btn-default" type="button">Update Data Rate</button>
             </span>
         </div><!-- /input-group -->
     </div><!-- /.col-lg-6 -->
 </div><!-- /.row -->
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().suctionTemp)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().compressionTemp)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().condensorTemp)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().expansionTemp)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().returnAirTemp)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().returnAirHumidity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().dischargeAirTemp)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().dischargeAirHumidity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().compressorCurrent)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().fanCurrent)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataLogs.FirstOrDefault().timeStamp)
+            </th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.DataLogs)
+        {
+            <tr>
+                <td>
+                   @Html.DisplayFor(modelItem => item.suctionTemp)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.compressionTemp)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.condensorTemp)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.expansionTemp)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.returnAirTemp)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.returnAirHumidity)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.dischargeAirTemp)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.dischargeAirHumidity)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.compressorCurrent)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.fanCurrent)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.timeStamp)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@section scripts{
+
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            plotCurrent();
+            plotRefrigerant();
+            plotAirTemp();
+            plotAirHumidity();
+        });
+
+
+        function plotCurrent() {
+
+            $.ajax({
+                type: 'GET',
+                async: true,
+                cache: false,
+                url: '@Url.Action("GetTodaysPower")',
+                dataType: 'json',
+                data: { deviceId : '@Model.Device.deviceId'},
+                success: function (data) {
+
+                    var ctx = document.getElementById('power').getContext('2d');
+                    var chart = new Chart(ctx, {
+                        // The type of chart we want to create
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: data.datasets
+                        },
+
+                        // Configuration options go here
+                        options: {
+
+                        }
+                    });
+
+                    chart.update();
+
+                },
+                error: function (jqXHR, status, err) {
+                    alert("Local error callback.");
+                }
+            });
+        }
+
+         function plotRefrigerant() {
+
+            $.ajax({
+                type: 'GET',
+                async: true,
+                cache: false,
+                url: '@Url.Action("GetTodaysRefrigerant")',
+                dataType: 'json',
+                data: { deviceId : '@Model.Device.deviceId'},
+                success: function (data) {
+
+                    var ctx = document.getElementById('ref').getContext('2d');
+                    var chart = new Chart(ctx, {
+                        // The type of chart we want to create
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: data.datasets
+                        },
+
+                        // Configuration options go here
+                        options: {
+
+                        }
+                    });
+
+                    chart.update();
+
+                },
+                error: function (jqXHR, status, err) {
+                    alert("Local error callback.");
+                }
+            });
+        }
+
+        function plotAirTemp() {
+
+            $.ajax({
+                type: 'GET',
+                async: true,
+                cache: false,
+                url: '@Url.Action("GetTodaysAirTemp")',
+                dataType: 'json',
+                data: { deviceId : '@Model.Device.deviceId'},
+                success: function (data) {
+
+                    var ctx = document.getElementById('airT').getContext('2d');
+                    var chart = new Chart(ctx, {
+                        // The type of chart we want to create
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: data.datasets
+                        },
+
+                        // Configuration options go here
+                        options: {
+
+                        }
+                    });
+
+                    chart.update();
+
+                },
+                error: function (jqXHR, status, err) {
+                    alert("Local error callback.");
+                }
+            });
+        }
+
+        function plotAirHumidity() {
+
+            $.ajax({
+                type: 'GET',
+                async: true,
+                cache: false,
+                url: '@Url.Action("GetTodaysAirHumidity")',
+                dataType: 'json',
+                data: { deviceId : '@Model.Device.deviceId'},
+                success: function (data) {
+
+                    var ctx = document.getElementById('airH').getContext('2d');
+                    var chart = new Chart(ctx, {
+                        // The type of chart we want to create
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: data.datasets
+                        },
+
+                        // Configuration options go here
+                        options: {
+
+                        }
+                    });
+
+                    chart.update();
+
+                },
+                error: function (jqXHR, status, err) {
+                    alert("Local error callback.");
+                }
+            });
+        }
+
+    </script>
+
+
+}

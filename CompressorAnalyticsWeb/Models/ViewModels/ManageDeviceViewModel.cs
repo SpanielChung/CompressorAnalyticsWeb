@@ -19,6 +19,11 @@ namespace CompressorAnalyticsWeb.Models
 
         public ICollection<DataLog> DataLogs { get; set; }
 
+        public chartData refridgerantData { get; set; }
+        public chartData powerData { get; set; }
+        public chartData airData { get; set; }
+
+        public List<string> labels { get; set; }
     }
 
 }
